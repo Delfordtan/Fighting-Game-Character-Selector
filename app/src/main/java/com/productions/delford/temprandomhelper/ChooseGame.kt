@@ -24,7 +24,7 @@ class ChooseGame : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_choose_game)
 
-        chooseGame()
+
 
         val chooseGameBtn = chooseGame
 

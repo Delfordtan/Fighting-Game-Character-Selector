@@ -1,18 +1,19 @@
 package com.productions.delford.temprandomhelper
 
+import android.graphics.Color
+import android.graphics.Typeface
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.GridLayoutManager
 import android.util.Log
+import android.widget.TextView
 import com.github.ajalt.flexadapter.FlexAdapter
 import com.github.ajalt.flexadapter.register
+import com.github.ajalt.flexadapter.registerSelectable
 import kotlinx.android.synthetic.main.activity_match_screen2.*
-import kotlinx.android.synthetic.main.match_cell.*
 import kotlinx.android.synthetic.main.match_cell.view.*
-import org.jetbrains.anko.alert
-import org.jetbrains.anko.okButton
+import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk25.coroutines.onClick
-import org.jetbrains.anko.startActivity
 import java.util.*
 
 class MatchScreen : AppCompatActivity() {
@@ -50,12 +51,21 @@ class MatchScreen : AppCompatActivity() {
         matchRecyclerView.layoutManager = layoutManager
 
         with(matchAdapter) {
+
+
+
             register<Match>(R.layout.match_cell, span = 1) { it, v, position ->
 
 
                 v.p1Character.text = it.p1Character.name
                 v.p2Character.text = it.p2Character.name
                 v.matchNumber.text = "${position + 1}."
+
+                v.onClick {
+                    currentRound = position
+                    loadRoundData(currentRound)
+                    matchAdapter.notifyItemRangeChanged(0,randomisedRounds.count())
+                }
 
 
                 fun checkMatchWinner(): String {
@@ -66,8 +76,6 @@ class MatchScreen : AppCompatActivity() {
                         else -> return ""
 
                     }
-
-
                 }
 
                 when (it.winState) {
@@ -76,8 +84,31 @@ class MatchScreen : AppCompatActivity() {
                 }
 
 
+                if (position == currentRound) {
+                    v.backgroundColor = Color.argb(255, 251, 192, 233)
+                    v.p1Character.typeface = Typeface.DEFAULT_BOLD
+                    v.p2Character.typeface = Typeface.DEFAULT_BOLD
+                    v.matchNumber.typeface = Typeface.DEFAULT_BOLD
+                    v.vs.typeface = Typeface.DEFAULT_BOLD
+                    v.score.typeface = Typeface.DEFAULT_BOLD
+
+                } else {
+                    v.backgroundColor = Color.WHITE
+                    v.p1Character.typeface = Typeface.DEFAULT
+                    v.p2Character.typeface = Typeface.DEFAULT
+                    v.matchNumber.typeface = Typeface.DEFAULT
+                    v.vs.typeface = Typeface.DEFAULT
+
+                    v.score.typeface = Typeface.DEFAULT
+                }
+
+
             }
+
+
         }
+
+
         matchAdapter.items.addAll(randomisedRounds)
 
 
@@ -107,6 +138,7 @@ class MatchScreen : AppCompatActivity() {
 
             updateRoundScore()
 
+
             if ((currentRound + 1 ) >= randomisedRounds.count()) {
 
                 val p1Score = p1TotalScore.text.toString().toInt()
@@ -120,6 +152,7 @@ class MatchScreen : AppCompatActivity() {
             } else {
                 currentRound += 1
                 loadRoundData(currentRound)
+                matchAdapter.notifyItemObjectChanged(randomisedRounds[currentRound])
             }
         }
 
@@ -173,13 +206,8 @@ class MatchScreen : AppCompatActivity() {
 
         while (p1CharactersList.isNotEmpty()) {
 
-            Log.d("P1Ch:", "${p1CharactersList.count()}")
-            Log.d("P2Ch:", "${p2CharactersList.count()}")
             val p1Selected = (0 until p1CharactersList.count()).random()
             val p2Selected = (0 until p2CharactersList.count()).random()
-
-            Log.d("P1S:", "$p1Selected")
-            Log.d("P2S:", "$p2Selected")
 
             matchArray.add(Match(p1CharactersList[p1Selected], p2CharactersList[p2Selected]))
 
